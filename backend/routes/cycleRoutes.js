@@ -1,0 +1,125 @@
+const express = require('express');
+const router = express.Router();
+const Cycle = require('../models/Cycle');
+
+// Calculate cycle predictions
+const calculateCycle = (lastPeriodDate, cycleLength, periodLength) => {
+  const lastPeriod = new Date(lastPeriodDate);
+  const predictions = [];
+  
+  // Calculate next 6 months
+  for (let i = 0; i < 6; i++) {
+    const cycleStart = new Date(lastPeriod);
+    cycleStart.setDate(cycleStart.getDate() + (i * cycleLength));
+    
+    const cycleEnd = new Date(cycleStart);
+    cycleEnd.setDate(cycleEnd.getDate() + cycleLength);
+    
+    const periodStart = new Date(cycleStart);
+    const periodEnd = new Date(periodStart);
+    periodEnd.setDate(periodEnd.getDate() + periodLength);
+    
+    // Fertile window (ovulation typically 14 days before next period)
+    const ovulationDate = new Date(cycleEnd);
+    ovulationDate.setDate(ovulationDate.getDate() - 14);
+    
+    const fertileWindowStart = new Date(ovulationDate);
+    fertileWindowStart.setDate(fertileWindowStart.getDate() - 5);
+    
+    const fertileWindowEnd = new Date(ovulationDate);
+    fertileWindowEnd.setDate(fertileWindowEnd.getDate() + 1);
+    
+    predictions.push({
+      cycleNumber: i + 1,
+      cycleStart: cycleStart.toISOString(),
+      cycleEnd: cycleEnd.toISOString(),
+      periodStart: periodStart.toISOString(),
+      periodEnd: periodEnd.toISOString(),
+      ovulationDate: ovulationDate.toISOString(),
+      fertileWindowStart: fertileWindowStart.toISOString(),
+      fertileWindowEnd: fertileWindowEnd.toISOString()
+    });
+  }
+  
+  return predictions;
+};
+
+// Get user's cycle data
+router.get('/:userId', async (req, res) => {
+  try {
+    const cycle = await Cycle.findOne({ userId: req.params.userId });
+    if (!cycle) {
+      return res.status(404).json({ message: 'Cycle data not found' });
+    }
+    
+    const predictions = calculateCycle(cycle.lastPeriodDate, cycle.cycleLength, cycle.periodLength);
+    
+    res.json({
+      ...cycle.toObject(),
+      predictions
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Create or update cycle data
+router.post('/', async (req, res) => {
+  try {
+    const { userId, lastPeriodDate, cycleLength, periodLength, notes } = req.body;
+    
+    const cycle = await Cycle.findOneAndUpdate(
+      { userId },
+      { lastPeriodDate, cycleLength, periodLength, notes },
+      { new: true, upsert: true }
+    );
+    
+    const predictions = calculateCycle(cycle.lastPeriodDate, cycle.cycleLength, cycle.periodLength);
+    
+    res.json({
+      ...cycle.toObject(),
+      predictions
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// Update cycle data
+router.put('/:userId', async (req, res) => {
+  try {
+    const cycle = await Cycle.findOneAndUpdate(
+      { userId: req.params.userId },
+      req.body,
+      { new: true }
+    );
+    
+    if (!cycle) {
+      return res.status(404).json({ message: 'Cycle data not found' });
+    }
+    
+    const predictions = calculateCycle(cycle.lastPeriodDate, cycle.cycleLength, cycle.periodLength);
+    
+    res.json({
+      ...cycle.toObject(),
+      predictions
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// Delete cycle data
+router.delete('/:userId', async (req, res) => {
+  try {
+    const cycle = await Cycle.findOneAndDelete({ userId: req.params.userId });
+    if (!cycle) {
+      return res.status(404).json({ message: 'Cycle data not found' });
+    }
+    res.json({ message: 'Cycle data deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+module.exports = router;
