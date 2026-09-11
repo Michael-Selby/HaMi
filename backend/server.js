@@ -21,6 +21,10 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/hami')
 
 // Routes
 app.use('/api/cycles', require('./routes/cycleRoutes'));
+app.use('/api/push', require('./routes/pushRoutes'));
+
+// Web push reminder scheduler
+require('./utils/reminderScheduler').startReminderScheduler();
 
 // Health check endpoint
 app.get('/health', (req, res) => {

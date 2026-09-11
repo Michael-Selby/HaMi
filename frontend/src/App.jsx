@@ -95,6 +95,7 @@ function App() {
                 initialData={cycleData} 
                 onSave={handleSaveCycle} 
                 onCancel={() => setShowForm(false)} 
+                userId={userId}
               />
             </motion.div>
           )}
