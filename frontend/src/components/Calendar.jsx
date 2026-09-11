@@ -7,6 +7,10 @@ function Calendar({ predictions, currentMonth, onMonthChange }) {
   const monthEnd = endOfMonth(currentMonth);
   const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
+  const leadingBlankCount = monthStart.getDay();
+  const totalCells = Math.ceil((leadingBlankCount + calendarDays.length) / 7) * 7;
+  const trailingBlankCount = totalCells - leadingBlankCount - calendarDays.length;
+
   const getDayStatus = (date) => {
     const dateStr = date.toISOString();
     
@@ -102,9 +106,12 @@ function Calendar({ predictions, currentMonth, onMonthChange }) {
       </div>
 
       <div className="grid grid-cols-7 gap-2">
+        {Array.from({ length: leadingBlankCount }).map((_, i) => (
+          <div key={`blank-${i}`} />
+        ))}
         {calendarDays.map((day, index) => (
           <motion.div 
-            key={day.toISOString()} 
+            key={`day-${day.toISOString()}`} 
             className={getDayClass(day)}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -114,6 +121,9 @@ function Calendar({ predictions, currentMonth, onMonthChange }) {
           >
             {format(day, 'd')}
           </motion.div>
+        ))}
+        {Array.from({ length: trailingBlankCount }).map((_, i) => (
+          <div key={`trailing-${i}`} />
         ))}
       </div>
 
