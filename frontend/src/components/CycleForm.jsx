@@ -12,7 +12,11 @@ function CycleForm({ initialData, onSave, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    onSave({
+      ...formData,
+      cycleLength: formData.cycleLength === '' || isNaN(formData.cycleLength) ? 28 : Number(formData.cycleLength),
+      periodLength: formData.periodLength === '' || isNaN(formData.periodLength) ? 5 : Number(formData.periodLength)
+    });
   };
 
   return (
@@ -77,7 +81,7 @@ function CycleForm({ initialData, onSave, onCancel }) {
           <motion.input
             type="number"
             value={formData.cycleLength}
-            onChange={(e) => setFormData({ ...formData, cycleLength: parseInt(e.target.value) || 28 })}
+            onChange={(e) => setFormData({ ...formData, cycleLength: e.target.value })}
             min="21"
             max="35"
             placeholder="28"
@@ -98,7 +102,7 @@ function CycleForm({ initialData, onSave, onCancel }) {
           <motion.input
             type="number"
             value={formData.periodLength}
-            onChange={(e) => setFormData({ ...formData, periodLength: parseInt(e.target.value) || 5 })}
+            onChange={(e) => setFormData({ ...formData, periodLength: e.target.value })}
             min="2"
             max="7"
             placeholder="5"
