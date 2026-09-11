@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Calendar from './components/Calendar';
 import CycleForm from './components/CycleForm';
 import CycleInfo from './components/CycleInfo';
+import InstallBanner from './components/InstallBanner';
 import { Calendar as CalendarIcon, Moon, Sparkles } from 'lucide-react';
 
 function App() {
@@ -143,6 +144,7 @@ function App() {
           )}
         </AnimatePresence>
       </main>
+      <InstallBanner />
     </div>
   );
 }
