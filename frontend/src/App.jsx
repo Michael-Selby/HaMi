@@ -85,7 +85,7 @@ function App() {
         <AnimatePresence>
           {showForm && (
             <motion.div 
-              className="mb-8"
+              className="mb-8 max-w-xl mx-auto"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
