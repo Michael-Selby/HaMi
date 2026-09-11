@@ -11,7 +11,7 @@ const calculateCycle = (lastPeriodDate, cycleLength, periodLength) => {
 
     const periodStart = new Date(cycleStart);
     const periodEnd = new Date(periodStart);
-    periodEnd.setDate(periodEnd.getDate() + periodLength);
+    periodEnd.setDate(periodEnd.getDate() + periodLength - 1);
 
     const ovulationDate = new Date(cycleEnd);
     ovulationDate.setDate(ovulationDate.getDate() - 14);
