@@ -9,6 +9,7 @@ import { Calendar as CalendarIcon, Moon, Sparkles } from 'lucide-react';
 function App() {
   const [cycleData, setCycleData] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const userId = 'user-1'; // In production, this would come from auth
@@ -18,15 +19,19 @@ function App() {
   }, []);
 
   const fetchCycleData = async () => {
+    setLoadError(false);
     try {
       const apiUrl = import.meta.env.VITE_API_URL || '/api';
       const response = await fetch(`${apiUrl}/cycles/${userId}`);
       if (response.ok) {
         const data = await response.json();
         setCycleData(data);
+      } else if (response.status !== 404) {
+        setLoadError(true);
       }
     } catch (error) {
       console.error('Error fetching cycle data:', error);
+      setLoadError(true);
     }
   };
 
@@ -108,22 +113,46 @@ function App() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-            >
-              <Sparkles className="w-16 h-16 mx-auto text-pink-400 mb-4" />
-            </motion.div>
-            <h2 className="text-2xl font-semibold text-gray-700 mb-2">Welcome to HaMi! 🌸</h2>
-            <p className="text-gray-500 mb-6">Let's track your cycle together</p>
-            <motion.button
-              onClick={() => setShowForm(true)}
-              className="px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl text-lg font-medium"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Get Started ✨
-            </motion.button>
+            {loadError ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <Sparkles className="w-16 h-16 mx-auto text-pink-400 mb-4" />
+                <h2 className="text-2xl font-semibold text-gray-700 mb-2">We couldn't load your data 😕</h2>
+                <p className="text-gray-500 mb-6">Check your connection or try again.</p>
+                <motion.button
+                  onClick={fetchCycleData}
+                  className="px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl text-lg font-medium"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Retry
+                </motion.button>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                >
+                  <Sparkles className="w-16 h-16 mx-auto text-pink-400 mb-4" />
+                </motion.div>
+                <h2 className="text-2xl font-semibold text-gray-700 mb-2">Welcome to HaMi! 🌸</h2>
+                <p className="text-gray-500 mb-6">Let's track your cycle together</p>
+                <motion.button
+                  onClick={() => setShowForm(true)}
+                  className="px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl text-lg font-medium"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Get Started ✨
+                </motion.button>
+              </motion.div>
+            )}
           </motion.div>
         )}
 

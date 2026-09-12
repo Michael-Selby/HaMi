@@ -11,23 +11,28 @@ function Calendar({ predictions, currentMonth, onMonthChange }) {
   const totalCells = Math.ceil((leadingBlankCount + calendarDays.length) / 7) * 7;
   const trailingBlankCount = totalCells - leadingBlankCount - calendarDays.length;
 
-  const getDayStatus = (date) => {
-    const dateStr = date.toISOString();
-    
-    for (const prediction of predictions) {
-      const periodStart = new Date(prediction.periodStart);
-      const periodEnd = new Date(prediction.periodEnd);
-      const fertileStart = new Date(prediction.fertileWindowStart);
-      const fertileEnd = new Date(prediction.fertileWindowEnd);
+  const toCalendarDayKey = (date) => {
+    const d = new Date(date);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
 
-      if (date >= periodStart && date <= periodEnd) {
+  const toPredictionDayKey = (date) => {
+    const d = new Date(date);
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+  };
+
+  const getDayStatus = (date) => {
+    const dayKey = toCalendarDayKey(date);
+
+    for (const prediction of predictions) {
+      if (dayKey >= toPredictionDayKey(prediction.periodStart) && dayKey <= toPredictionDayKey(prediction.periodEnd)) {
         return 'period';
       }
-      if (date >= fertileStart && date <= fertileEnd) {
+      if (dayKey >= toPredictionDayKey(prediction.fertileWindowStart) && dayKey <= toPredictionDayKey(prediction.fertileWindowEnd)) {
         return 'fertile';
       }
     }
-    
+
     return 'safe';
   };
 
